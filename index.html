@@ -1,162 +1,32 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>CSS Highway Racer</title>
-    <style>
-        :root {
-            --road-speed: 0.5s;
-            --enemy-speed: 3s;
-        }
+// Variável global para rastrear a posição X do carro
+let carX = 175; // Começa no centro (400/2 - 25)
+const player = document.getElementById('player');
+const container = document.querySelector('.game-container');
+const speed = 20; // Quantos pixels o carro anda por clique
 
-        body {
-            margin: 0;
-            background: #222;
-            overflow: hidden;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+// 1. Movimento via Mouse (Mantido)
+function moveCar(e) {
+    const rect = container.getBoundingClientRect();
+    carX = e.clientX - rect.left - 25;
+    updateCarPosition();
+}
 
-        /* Área do Jogo */
-        .game-container {
-            position: relative;
-            width: 400px;
-            height: 600px;
-            background: #333;
-            border: 10px solid #555;
-            overflow: hidden;
-            cursor: none; /* Esconde o mouse para usar o carro */
-        }
+// 2. Movimento via Teclado
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        carX -= speed;
+    } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        carX += speed;
+    }
+    updateCarPosition();
+});
 
-        /* Estrada Animada */
-        .road {
-            position: absolute;
-            width: 100%;
-            height: 200%;
-            top: -100%;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 50px,
-                #fff 50px,
-                #fff 100px
-            ) no-repeat center center / 10px 100%;
-            background-color: #444;
-            animation: moveRoad var(--road-speed) linear infinite;
-        }
+// 3. Função Única para Atualizar e Validar Limites
+function updateCarPosition() {
+    // Impede que o carro saia da pista (0 a 350px)
+    if (carX < 0) carX = 0;
+    if (carX > 350) carX = 350;
 
-        @keyframes moveRoad {
-            from { transform: translateY(0); }
-            to { transform: translateY(100px); }
-        }
-
-        /* O Jogador (Seguindo o Mouse) */
-        /* Usamos um container que ocupa o jogo todo para rastrear o hover */
-        .player-track {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-        }
-
-        .car-player {
-            position: absolute;
-            width: 50px;
-            height: 90px;
-            background: #e74c3c;
-            border-radius: 5px;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: left 0.1s ease-out;
-            pointer-events: none; /* O carro não bloqueia o hover do fundo */
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-        }
-        
-        /* Simulação de controle: o carro segue o mouse na horizontal */
-        .game-container:hover .car-player {
-            /* Ativado via CSS nativo não é perfeito, mas aqui simulamos com a posição do mouse */
-            transition: 0.1s;
-        }
-
-        /* Inimigos */
-        .enemy {
-            position: absolute;
-            width: 50px;
-            height: 90px;
-            background: #f1c40f;
-            border-radius: 5px;
-            top: -100px;
-        }
-
-        .enemy-1 { left: 50px; animation: drop var(--enemy-speed) linear infinite; }
-        .enemy-2 { left: 175px; animation: drop 4.2s linear infinite 1s; }
-        .enemy-3 { left: 300px; animation: drop 2.5s linear infinite 0.5s; }
-
-        @keyframes drop {
-            0% { top: -100px; }
-            100% { top: 700px; }
-        }
-
-        /* Lógica de Colisão (Game Over) */
-        /* Se o mouse passar por cima de um inimigo, o Game Over aparece */
-        .enemy:hover ~ .game-over-screen {
-            display: flex;
-        }
-
-        .game-over-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            display: none; /* Escondido por padrão */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .instructions {
-            position: absolute;
-            bottom: 10px;
-            color: white;
-            text-align: center;
-            width: 100%;
-            pointer-events: none;
-        }
-
-    </style>
-</head>
-<body>
-
-    <div class="game-container" onmousemove="moveCar(event)">
-        <div class="road"></div>
-
-        <div class="enemy enemy-1"></div>
-        <div class="enemy enemy-2"></div>
-        <div class="enemy enemy-3"></div>
-
-        <div id="player" class="car-player"></div>
-
-        <div class="game-over-screen">
-            <h1>BATEU!</h1>
-            <p>Retire o mouse e coloque de novo para reiniciar.</p>
-        </div>
-
-        <div class="instructions">Mova o mouse para os lados!</div>
-    </div>
-
-    <script>
-        // Usei apenas uma linha de JS para o carro seguir o mouse 
-        // perfeitamente, já que CSS puro não lê coordenadas de X.
-        function moveCar(e) {
-            const player = document.getElementById('player');
-            const rect = e.currentTarget.getBoundingClientRect();
-            let x = e.clientX - rect.left - 25;
-            //
+    player.style.left = carX + 'px';
+    player.style.transform = 'translateX(0)';
+}
