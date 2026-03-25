@@ -2,21 +2,36 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Carro</title>
+  <title>Jogo de Carro Avançado</title>
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      background: #333;
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
     }
     #gameArea {
       position: relative;
       width: 400px;
       height: 600px;
-      margin: auto;
-      background: #555;
-      border: 2px solid #000;
+      background: linear-gradient(#444, #222);
       overflow: hidden;
+      border: 4px solid #000;
+    }
+    .roadLine {
+      position: absolute;
+      width: 10px;
+      height: 80px;
+      background: white;
+      left: 195px;
+      animation: moveLine 1s linear infinite;
+    }
+    @keyframes moveLine {
+      from { top: -80px; }
+      to { top: 600px; }
     }
     .car {
       position: absolute;
@@ -26,6 +41,7 @@
       height: 80px;
       background: red;
       border-radius: 5px;
+      box-shadow: 0 0 10px #ff0000;
     }
     .obstacle {
       position: absolute;
@@ -33,32 +49,47 @@
       height: 80px;
       background: blue;
       border-radius: 5px;
+      box-shadow: 0 0 10px #00f;
     }
     #score {
-      text-align: center;
-      font-size: 24px;
-      color: white;
-      margin-top: 10px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 20px;
+    }
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 32px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="score">Pontuação: 0</div>
   <div id="gameArea">
+    <div id="score">Pontuação: 0</div>
     <div class="car" id="playerCar"></div>
+    <div id="gameOver">GAME OVER</div>
   </div>
 
   <script>
     const gameArea = document.getElementById("gameArea");
     const playerCar = document.getElementById("playerCar");
     const scoreDisplay = document.getElementById("score");
+    const gameOverText = document.getElementById("gameOver");
 
     let carX = 180;
     let score = 0;
     let gameOver = false;
-    let speed = 3;
+    let speed = 4;
 
+    // movimento do carro
     document.addEventListener("keydown", (e) => {
+      if (gameOver) return;
       if (e.key === "ArrowLeft" && carX > 0) {
         carX -= 20;
       }
@@ -68,6 +99,18 @@
       playerCar.style.left = carX + "px";
     });
 
+    // criar linhas da pista
+    function createRoadLines() {
+      for (let i = 0; i < 10; i++) {
+        const line = document.createElement("div");
+        line.classList.add("roadLine");
+        line.style.top = i * 60 + "px";
+        gameArea.appendChild(line);
+      }
+    }
+    createRoadLines();
+
+    // criar obstáculos
     function createObstacle() {
       const obstacle = document.createElement("div");
       obstacle.classList.add("obstacle");
@@ -86,9 +129,9 @@
           obstacleTop + 80 >= 520 &&
           parseInt(obstacle.style.left) === carX
         ) {
-          alert("Game Over! Sua pontuação: " + score);
           gameOver = true;
-          location.reload();
+          gameOverText.style.display = "block";
+          return;
         }
 
         // pontuação
