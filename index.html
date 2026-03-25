@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Carro Avançado</title>
+  <title>Jogo de Carro Arcade</title>
   <style>
     body {
       margin: 0;
-      background: #222;
+      background: #111;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,15 +17,16 @@
       position: relative;
       width: 400px;
       height: 600px;
-      background: linear-gradient(#444, #222);
+      background: linear-gradient(#333, #111);
       overflow: hidden;
       border: 4px solid #000;
+      box-shadow: 0 0 30px #0ff inset;
     }
     .roadLine {
       position: absolute;
       width: 10px;
       height: 80px;
-      background: white;
+      background: #fff;
       left: 195px;
       animation: moveLine 1s linear infinite;
     }
@@ -37,26 +38,28 @@
       position: absolute;
       bottom: 20px;
       left: 180px;
-      width: 40px;
-      height: 80px;
-      background: red;
-      border-radius: 5px;
-      box-shadow: 0 0 10px #ff0000;
+      width: 50px;
+      height: 90px;
+      background: linear-gradient(to bottom, red, darkred);
+      border-radius: 10px;
+      box-shadow: 0 0 20px #f00, 0 0 40px #f00 inset;
+      transition: left 0.1s ease;
     }
     .obstacle {
       position: absolute;
-      width: 40px;
-      height: 80px;
-      background: blue;
-      border-radius: 5px;
-      box-shadow: 0 0 10px #00f;
+      width: 50px;
+      height: 90px;
+      background: linear-gradient(to bottom, blue, navy);
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00f, 0 0 40px #00f inset;
     }
     #score {
       position: absolute;
       top: 10px;
       left: 10px;
-      color: #fff;
+      color: #0ff;
       font-size: 20px;
+      text-shadow: 0 0 10px #0ff;
     }
     #gameOver {
       position: absolute;
@@ -64,8 +67,21 @@
       left: 50%;
       transform: translate(-50%, -50%);
       color: #fff;
-      font-size: 32px;
+      font-size: 36px;
       display: none;
+      text-shadow: 0 0 20px red;
+    }
+    .explosion {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: yellow;
+      border-radius: 50%;
+      animation: explode 0.5s ease-out forwards;
+    }
+    @keyframes explode {
+      from { transform: scale(1); opacity: 1; }
+      to { transform: scale(5); opacity: 0; }
     }
   </style>
 </head>
@@ -85,7 +101,7 @@
     let carX = 180;
     let score = 0;
     let gameOver = false;
-    let speed = 4;
+    let speed = 5;
 
     // movimento do carro
     document.addEventListener("keydown", (e) => {
@@ -93,7 +109,7 @@
       if (e.key === "ArrowLeft" && carX > 0) {
         carX -= 20;
       }
-      if (e.key === "ArrowRight" && carX < 360) {
+      if (e.key === "ArrowRight" && carX < 350) {
         carX += 20;
       }
       playerCar.style.left = carX + "px";
@@ -114,8 +130,8 @@
     function createObstacle() {
       const obstacle = document.createElement("div");
       obstacle.classList.add("obstacle");
-      obstacle.style.left = Math.floor(Math.random() * 10) * 40 + "px";
-      obstacle.style.top = "-80px";
+      obstacle.style.left = Math.floor(Math.random() * 7) * 50 + "px";
+      obstacle.style.top = "-90px";
       gameArea.appendChild(obstacle);
 
       function moveObstacle() {
@@ -126,9 +142,10 @@
 
         // colisão
         if (
-          obstacleTop + 80 >= 520 &&
+          obstacleTop + 90 >= 510 &&
           parseInt(obstacle.style.left) === carX
         ) {
+          explode(carX, 510);
           gameOver = true;
           gameOverText.style.display = "block";
           return;
@@ -147,9 +164,21 @@
       requestAnimationFrame(moveObstacle);
     }
 
+    // efeito de explosão
+    function explode(x, y) {
+      for (let i = 0; i < 10; i++) {
+        const particle = document.createElement("div");
+        particle.classList.add("explosion");
+        particle.style.left = x + "px";
+        particle.style.top = y + "px";
+        gameArea.appendChild(particle);
+        setTimeout(() => particle.remove(), 500);
+      }
+    }
+
     setInterval(() => {
       if (!gameOver) createObstacle();
-    }, 1500);
+    }, 1200);
   </script>
 </body>
 </html>
