@@ -1,32 +1,112 @@
-// Variável global para rastrear a posição X do carro
-let carX = 175; // Começa no centro (400/2 - 25)
-const player = document.getElementById('player');
-const container = document.querySelector('.game-container');
-const speed = 20; // Quantos pixels o carro anda por clique
-
-// 1. Movimento via Mouse (Mantido)
-function moveCar(e) {
-    const rect = container.getBoundingClientRect();
-    carX = e.clientX - rect.left - 25;
-    updateCarPosition();
-}
-
-// 2. Movimento via Teclado
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        carX -= speed;
-    } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        carX += speed;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo de Carro</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #333;
     }
-    updateCarPosition();
-});
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 600px;
+      margin: auto;
+      background: #555;
+      border: 2px solid #000;
+      overflow: hidden;
+    }
+    .car {
+      position: absolute;
+      bottom: 20px;
+      left: 180px;
+      width: 40px;
+      height: 80px;
+      background: red;
+      border-radius: 5px;
+    }
+    .obstacle {
+      position: absolute;
+      width: 40px;
+      height: 80px;
+      background: blue;
+      border-radius: 5px;
+    }
+    #score {
+      text-align: center;
+      font-size: 24px;
+      color: white;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Pontuação: 0</div>
+  <div id="gameArea">
+    <div class="car" id="playerCar"></div>
+  </div>
 
-// 3. Função Única para Atualizar e Validar Limites
-function updateCarPosition() {
-    // Impede que o carro saia da pista (0 a 350px)
-    if (carX < 0) carX = 0;
-    if (carX > 350) carX = 350;
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const playerCar = document.getElementById("playerCar");
+    const scoreDisplay = document.getElementById("score");
 
-    player.style.left = carX + 'px';
-    player.style.transform = 'translateX(0)';
-}
+    let carX = 180;
+    let score = 0;
+    let gameOver = false;
+    let speed = 3;
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && carX > 0) {
+        carX -= 20;
+      }
+      if (e.key === "ArrowRight" && carX < 360) {
+        carX += 20;
+      }
+      playerCar.style.left = carX + "px";
+    });
+
+    function createObstacle() {
+      const obstacle = document.createElement("div");
+      obstacle.classList.add("obstacle");
+      obstacle.style.left = Math.floor(Math.random() * 10) * 40 + "px";
+      obstacle.style.top = "-80px";
+      gameArea.appendChild(obstacle);
+
+      function moveObstacle() {
+        if (gameOver) return;
+        let obstacleTop = parseInt(obstacle.style.top);
+        obstacleTop += speed;
+        obstacle.style.top = obstacleTop + "px";
+
+        // colisão
+        if (
+          obstacleTop + 80 >= 520 &&
+          parseInt(obstacle.style.left) === carX
+        ) {
+          alert("Game Over! Sua pontuação: " + score);
+          gameOver = true;
+          location.reload();
+        }
+
+        // pontuação
+        if (obstacleTop > 600) {
+          score++;
+          scoreDisplay.textContent = "Pontuação: " + score;
+          obstacle.remove();
+          if (score % 5 === 0) speed++; // aumenta dificuldade
+        } else {
+          requestAnimationFrame(moveObstacle);
+        }
+      }
+      requestAnimationFrame(moveObstacle);
+    }
+
+    setInterval(() => {
+      if (!gameOver) createObstacle();
+    }, 1500);
+  </script>
+</body>
+</html>
